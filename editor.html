@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Éditeur — Welcome Dammusi</title>
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --ink: #2a2a2a;
+    --ink-soft: #6b6b6b;
+    --line: #e0e0e0;
+    --accent: #c46a3f;
+    --accent-soft: #f5e6dc;
+    --danger: #d64545;
+    --success: #4caf50;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 20px 18px 100px; }
+  header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .subtitle { color: var(--ink-soft); font-size: 14px; margin: 0; }
+  .toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px 0; align-items: center;
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .toolbar select, .toolbar button {
+    font-size: 14px; font-family: inherit;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+    background: white; cursor: pointer;
+  }
+  .toolbar select { min-width: 130px; }
+  .btn-primary { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; font-weight: 600; }
+  .btn-primary:disabled { opacity: 0.5; }
+  .btn-secondary { background: var(--card); }
+  .btn-danger { color: var(--danger); }
+  .spacer { flex: 1; }
+  .status {
+    font-size: 13px; padding: 6px 12px; border-radius: 6px;
+    background: var(--card); color: var(--ink-soft);
+  }
+  .status.ok { background: #e6f4e6; color: var(--success); }
+  .status.err { background: #fce8e8; color: var(--danger); }
+  .status.warn { background: #fdf5e6; color: #d68a20; }
+
+  .add-btns {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px; background: var(--card);
+    border: 1px dashed var(--line); border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .add-btns button {
+    font-size: 13px; padding: 8px 12px; border: 1px solid var(--line);
+    background: white; border-radius: 6px; cursor: pointer;
+    font-family: inherit;
+  }
+
+  .section {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+    position: relative;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; gap: 8px;
+  }
+  .section-type {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--accent); font-weight: 600;
+  }
+  .section-actions { display: flex; gap: 6px; }
+  .section-actions button {
+    background: none; border: 1px solid var(--line); cursor: pointer;
+    width: 32px; height: 32px; border-radius: 6px; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-actions button.del { color: var(--danger); border-color: #f5c4c4; }
+
+  textarea, input[type="text"], input[type="url"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+    border-radius: 8px; font-size: 15px; font-family: inherit;
+    resize: vertical; box-sizing: border-box;
+  }
+  textarea { min-height: 60px; line-height: 1.5; }
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block; font-size: 12px; color: var(--ink-soft);
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+
+  .color-picker {
+    display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;
+  }
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--line);
+    cursor: pointer; position: relative;
+  }
+  .color-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .color-swatch::after {
+    content: attr(data-name); position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); font-size: 10px; color: var(--ink-soft);
+    margin-top: 4px; white-space: nowrap;
+  }
+
+  .image-preview {
+    max-width: 100%; max-height: 200px; border-radius: 8px;
+    margin-top: 8px; display: block; border: 1px solid var(--line);
+  }
+  .image-btn {
+    display: inline-block; padding: 10px 16px;
+    background: var(--accent-soft); color: var(--accent);
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+  }
+
+  .emoji-hint {
+    font-size: 12px; color: var(--ink-soft); margin-top: 4px;
+  }
+
+  .info-banner {
+    background: var(--accent-soft); color: var(--accent);
+    padding: 10px 14px; border-radius: 8px; font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .footer-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: white; border-top: 1px solid var(--line);
+    padding: 12px 20px; display: flex; gap: 10px; justify-content: center;
+    z-index: 100;
+  }
+  .footer-bar button {
+    padding: 12px 20px; font-size: 15px; font-family: inherit;
+    border-radius: 8px; cursor: pointer; font-weight: 600;
+    border: 1px solid var(--line); background: white;
+  }
+  .footer-bar .save { background: var(--accent); color: white; border-color: var(--accent); }
+  .footer-bar .preview { background: white; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Éditeur — Welcome Dammusi</h1>
+  <p class="subtitle">Créez et modifiez les pages Dammusi et Pantelleria.</p>
+</header>
+
+<div class="info-banner" id="info-banner">
+  Chargement…
+</div>
+
+<div class="toolbar">
+  <label style="font-size:13px;color:var(--ink-soft);">Page :</label>
+  <select id="page-select"></select>
+  <button class="btn-secondary" onclick="addPage()" title="Ajouter une nouvelle page" style="padding:8px 10px;">＋ Page</button>
+  <label style="font-size:13px;color:var(--ink-soft);">Langue :</label>
+  <select id="lang-select">
+    <option value="fr">Français</option>
+    <option value="en">English</option>
+  </select>
+  <button class="btn-secondary" onclick="translateAll()" title="Traduire tous les champs vides depuis l'autre langue">🌐 Traduire tout</button>
+  <div class="spacer"></div>
+  <span class="status" id="status">Prêt</span>
+</div>
+
+<!-- Gestion des pages : nom + ordre + suppression -->
+<div id="pages-manager" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+  <div style="font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;font-weight:600;">Nom de la page active</div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input type="text" id="page-name" placeholder="Nom de la page" style="flex:1;min-width:150px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;">
+    <button class="btn-secondary" onclick="movePage(-1)" style="padding:8px 10px;">↑</button>
+    <button class="btn-secondary" onclick="movePage(1)" style="padding:8px 10px;">↓</button>
+    <button class="btn-secondary btn-danger" onclick="deletePage()" style="padding:8px 10px;">🗑</button>
+  </div>
+</div>
+
+<div class="field">
+  <label>Titre principal de la page (H1) <button type="button" onclick="translateTitle('title')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+  <input type="text" id="page-title" placeholder="Ex: Bienvenue à Pantelleria 🏝️">
+</div>
+
+<div class="field">
+  <label>Sous-titre (une ligne) <button type="button" onclick="translateTitle('subtitle')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+  <input type="text" id="page-subtitle" placeholder="Ex: Quelques informations pratiques pour votre séjour.">
+</div>
+
+<div class="add-btns">
+  <span style="font-size:13px; color:var(--ink-soft); align-self:center; margin-right:4px;">Ajouter :</span>
+  <button onclick="addSection('heading')">＋ Titre de section</button>
+  <button onclick="addSection('text')">＋ Paragraphe</button>
+  <button onclick="addSection('image')">＋ Image</button>
+  <button onclick="addSection('button')">＋ Bouton / lien</button>
+  <button onclick="addSection('important')">＋ Bloc important</button>
+</div>
+
+<div id="sections-container"></div>
+
+</div>
+
+<div class="footer-bar">
+  <button class="preview" onclick="document.getElementById('import-file').click()" title="Charger un fichier JSON de contenu">📂 Importer</button>
+  <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
+  <button class="preview" onclick="exportBackup()" title="Télécharger une sauvegarde locale (recommandé après chaque grosse modif)">💾 Exporter</button>
+  <button class="preview" onclick="preview()">👁️ Aperçu</button>
+  <button class="save" onclick="save()">💾 Sauvegarder</button>
+</div>
+
+<script>
+// ============ CONFIG SYNC ============
+const JSONBIN_ID = '6a42b682f5f4af5e29433172';
+const JSONBIN_KEY = '$2a$10$IkRJyyCIe6BYTEnZ9yQGDuxofcc8BabwYHc.ETUp3jgiLl.nWmmte';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+
+// Hébergement des images (ImgBB) — images en pleine qualité, jsonbin ne stocke que l'URL
+const IMGBB_API_KEY = 'cb88b76206aae4c674a8c1ccf5d3e580';
+const IMGBB_URL = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
+
+// Couleurs de fond disponibles pour les paragraphes
+const BG_COLORS = [
+  { id: 'none',        color: 'transparent', name: 'Aucun' },
+  { id: 'cream',       color: '#fdfaf6',    name: 'Crème' },
+  { id: 'sand',        color: '#f5e6dc',    name: 'Sable' },
+  { id: 'blue',        color: '#dceaf5',    name: 'Bleu' },
+  { id: 'green',       color: '#e3ede0',    name: 'Vert' },
+  { id: 'yellow',      color: '#fff3d0',    name: 'Jaune' },
+];
+
+// Structure des données
+let data = {
+  bookings: [],
+  welcome: {
+    pages: [
+      {
+        id: 'p1',
+        name: 'Dammusi',
+        title: { fr: 'Dammusi Kuddia Attalora 🏝️', en: 'Dammusi Kuddia Attalora 🏝️' },
+        subtitle: { fr: '', en: '' },
+        sections: []
+      },
+      {
+        id: 'p2',
+        name: 'Pantelleria',
+        title: { fr: 'Bienvenue à Pantelleria 🇮🇹', en: 'Welcome to Pantelleria 🇮🇹' },
+        subtitle: { fr: '', en: '' },
+        sections: []
+      }
+    ]
+  }
+};
+
+// Contenu pré-rempli (utilisé automatiquement si jsonbin est vide)
+const DEFAULT_WELCOME = {"pages": [{"id": "p1", "name": "🏠 i Dammusi", "title": {"fr": "Benvenuti a Pantelleria", "en": "Benvenuti a Pantelleria"}, "subtitle": {"fr": "📚 Ce guide rassemble quelques informations essentielles pour votre séjour ☀️", "en": "📚 This guide gives you some practical information for your stay ☀️"}, "sections": [{"id": "s01", "type": "heading", "content": {"fr": "📍 Où sommes-nous", "en": "📍 Our location"}}, {"id": "s02", "type": "text", "content": {"fr": "L'entrée de la propriété est située au sud de l'île dans la réserve naturelle, après le village de Scauri et Rekhale, dans le lieu-dit nommé « Salto della Vecchia » au numéro 100.", "en": "The entrance to the property is located in the south of the island in the nature reserve, after the village of Scauri and Rekhale, in the place called \"Salto della Vecchia\" at number 100."}, "bg": "none"}, {"id": "s03", "type": "button", "label": {"fr": "🗾 Ouvrir dans Maps", "en": "🗾 Open in Maps"}, "url": "https://maps.app.goo.gl/iDn9XuiyMzUoGvVa6?g_st=ic", "color": "terracotta", "align": "left"}, {"id": "s04", "type": "heading", "content": {"fr": "🚗 L'accès", "en": "🚗 The entrance"}}, {"id": "s05", "type": "text", "content": {"fr": "L'entrée de la propriété se situe au N°100. Empruntez le chemin de terre sur la gauche et suivez-le pendant environ 500 mètres. Vous arriverez ensuite sur une descente en béton et herbe. Descendez sur environ 50 mètres et vous trouverez le parking sur votre droite.", "en": "Upon arrival at the entrance of the property at No.100, remove the rope if installed and access the dirt road on the left and follow it for about 500 meters. Then you will reach a concrete-and-grass slope. Follow it down for about 50 metres and you will find the parking area on your right. Park your car there."}, "bg": "none"}, {"id": "s06", "type": "important", "content": {"fr": "🛑 Merci de vous garer ici.\n✋🏻 N'empruntez pas la route en pierre en voiture.", "en": "🛑 Please park here.\n✋🏻 Do not take the stone road with your car."}, "bg": "sand", "bold": true}, {"id": "s07", "type": "heading", "content": {"fr": "🏠 i Dammusi", "en": "🏠 The Dammusi"}}, {"id": "s08", "type": "text", "content": {"fr": "Devant vous s'ouvre la vue sur la mer et en contrebas dans les oliviers, se trouve la piscine.\nÀ gauche les dammusi Palma et Limone, et derrière la piscine à droite se situent les dammusi Lentisco Grande et Lentisco Piccolo. Les dammusi Fico Grande et Fico Piccolo sont à l'entrée de la propriété.", "en": "In front of you is the view of the sea and below in the olive trees is the swimming pool.\nOn the left the dammusi Palma and Limone, and behind the pool on the right are the dammusi Lentisco Grande and Lentisco Piccolo. The dammusi Fico Grande and Fico Piccolo are at the entrance of the property."}, "bg": "none"}, {"id": "s09", "type": "heading", "content": {"fr": "🚪 Ouvrir la porte", "en": "🚪 Open the door"}}, {"id": "s10", "type": "text", "content": {"fr": "Pour ouvrir les portes traditionnelles en bois, il faut soulever fermement l'anneau métallique bas 💪🏻🔗 et le faire coulisser verticalement dans sa rainure, tout en poussant la porte.\nDepuis l'intérieur, il suffit de soulever le montant vertical en bois situé en bas de la porte et tirer la porte vers soi.\nLe loquet permet de fermer les dammusi depuis l'intérieur et les clés depuis l'extérieur.", "en": "To open the traditional wooden doors, it is necessary to firmly lift the low metal ring 💪🏻🔗 and slide it vertically in its groove, while pushing the door.\nFrom the inside, simply lift the wooden upright at the bottom of the door.\nThe latch allows the dammusi to be closed from the inside and the keys from the outside."}, "bg": "none"}, {"id": "s11", "type": "heading", "content": {"fr": "🍽️ La cuisine", "en": "🍽️ The kitchen"}}, {"id": "s12", "type": "text", "content": {"fr": "Le dammuso Limone 🍋 accueille la cuisine. Vous y trouvez l'ensemble nécessaire pour cuisiner : le frigo, les plaques et le four.\nDepuis la terrasse extérieure, une petite porte donne accès au local de rangement où vous trouverez toute la vaisselle, les verres 🍷 et les équipements de cuisine. Vous y trouverez également les bacs de tri.\n♻️ Merci de bien trier vos déchets, c'est très important sur l'île.", "en": "The dammuso Limone 🍋 welcomes the kitchen. You will find the necessary set for cooking: the fridge, the hobs and the oven.\nFrom the outdoor terrace, a small door gives access to the storage room where you will find all the dishes, glasses 🍷 and kitchen equipment. You will also find the sorting bins.\n♻️ Thank you for sorting your waste, it is very important on the island."}, "bg": "none"}, {"id": "s13", "type": "heading", "content": {"fr": "💦 L'eau", "en": "💦 Water"}}, {"id": "s14", "type": "important", "content": {"fr": "⚠️ Ne buvez pas l'eau du robinet, elle provient de citernes et n'est pas potable.", "en": "⚠️ Do not drink tap water, it comes from a cistern and is not drinkable."}, "bg": "sand", "bold": true}, {"id": "s15", "type": "text", "content": {"fr": "En revanche, dans la cuisine, le petit robinet 🚰 situé à gauche de l'évier est relié à un système de filtration : cette eau est parfaitement potable. N'hésitez pas à remplir les bouteilles en verre et à les placer au réfrigérateur. 🧊", "en": "However, in the kitchen, the small tap 🚰 to the left of the sink is connected to a filtration system: this water is perfectly potable. Feel free to fill the glass bottles and place them in the refrigerator. 🧊"}, "bg": "none"}, {"id": "s16", "type": "important", "content": {"fr": "Un point très important : l'eau est une ressource extrêmement rare à Pantelleria 💧\nChaque dammuso possède sa propre réserve d'eau. Merci de l'utiliser avec parcimonie 🚿 (douches courtes et vérifiez que les robinets sont bien fermés et que les chasses d'eau ne coulent plus après utilisation).\n🧻 Merci de ne jeter que du papier toilette dans les WC.", "en": "A very important point: water is an extremely rare resource in Pantelleria 💧\nEach dammuso has its own water tank. Thank you for using it sparingly 🚿 (short showers and check that the faucets are closed and that the flushes do not flow after use).\n🧻 Please only throw toilet paper in the toilet."}, "bg": "sand", "bold": true}, {"id": "s17", "type": "heading", "content": {"fr": "💡 La lumière extérieure", "en": "💡 The outdoor light"}}, {"id": "s18", "type": "text", "content": {"fr": "Elle s'allume automatiquement à la tombée de la nuit 🌙\nSi vous souhaitez profiter de l'obscurité pour contempler la voie lactée exceptionnelle ✨🌝, chaque dammuso a un petit tableau électrique qui contient des disjoncteurs avec l'étiquette « Terrazze Camere » ou « Luci Esterne ». Abaissez-les ou appuyez sur les boutons munis d'une LED 🟢 verte pour les éteindre.", "en": "It turns on automatically at nightfall 🌙\nIf you want to take advantage of the darkness to contemplate the exceptional Milky Way ✨🌝, each dammuso has a small electrical panel that contains circuit breakers with the label \"Terrazze Camere\" or \"Luci Esterne\". Lower them or press the buttons with a 🟢 green LED to turn them off."}, "bg": "none"}, {"id": "s19", "type": "heading", "content": {"fr": "🏊‍♂️ La piscine", "en": "🏊‍♂️ The pool"}}, {"id": "s20", "type": "text", "content": {"fr": "Sous la terrasse de la piscine se trouvent les parasols 🏖️ Merci de ne jamais les laisser ouverts lorsque vous quittez la propriété, le vent 🌬️ peut se lever très rapidement.\nUn interrupteur dans le mur en pierre au niveau du palmier 🌴 permet d'allumer l'éclairage 💡 de la piscine.", "en": "Under the pool terrace are the umbrellas 🏖️ Please never leave them open when you leave the property, the wind 🌬️ can pick up very quickly.\nA switch in the stone wall at the palm tree 🌴 turns on 💡 the pool lighting."}, "bg": "none"}, {"id": "s21", "type": "heading", "content": {"fr": "📡 Wi-Fi", "en": "📡 Wi-Fi"}}, {"id": "s22", "type": "important", "content": {"fr": "Réseau : Mokiparadisco\nMot de passe : Ferreol&Rodolphe", "en": "Network: Mokiparadisco\nPassword: Ferreol&Rodolphe"}, "bg": "sand", "bold": true}, {"id": "s23", "type": "heading", "content": {"fr": "👩🏻‍🦰 Gouvernante", "en": "👩🏻‍🦰 Housekeeper"}}, {"id": "s24", "type": "text", "content": {"fr": "Marianna (parle uniquement italien)", "en": "Marianna (speaks only Italian)"}, "bg": "none"}, {"id": "s25", "type": "button", "label": {"fr": "📱 WhatsApp Marianna", "en": "📱 WhatsApp Marianna"}, "url": "https://wa.me/393272817202", "color": "blue", "align": "left"}]}, {"id": "p2", "name": "🏝️ L'Isola", "title": {"fr": "Welcome to Pantelleria 🇮🇹", "en": "Welcome to Pantelleria 🇮🇹"}, "subtitle": {"fr": "", "en": ""}, "sections": [{"id": "i01", "type": "heading", "content": {"fr": "📍 La carte", "en": "📍 The map"}}, {"id": "i02", "type": "text", "content": {"fr": "Voici une carte avec quelques bonnes adresses et conseils… mais surtout, prenez le temps de découvrir l'île à votre façon !", "en": "Here is a map with some good addresses and tips… but above all, take the time to discover the island in your own way!"}, "bg": "none"}, {"id": "i03", "type": "button", "label": {"fr": "🗾 Ouvrir la carte", "en": "🗾 Open the map"}, "url": "https://www.google.com/maps/d/u/0/edit?mid=1YzQ_SphYKoDJRi-8FUcMbZxslsNraUE&usp=sharing", "color": "terracotta", "align": "left"}, {"id": "i04", "type": "heading", "content": {"fr": "👨🏻‍🍳 Restaurants", "en": "👨🏻‍🍳 Restaurants"}}, {"id": "i05", "type": "text", "content": {"fr": "Pour votre premier soir, nous vous recommandons de dîner à La Nicchia, à Scauri. Un excellent restaurant de pizza et de plats traditionnels pantesques.\nPuis dégustez une glace chez Gelato di Ulisse 🍦 ou prenez un verre 🍸 au Kaya Kaya, l'endroit incontournable de Scauri pour un apéritif ou un verre après le dîner.\nNotre adresse préférée pour le déjeuner est Principe e Pirata 🏴‍☠️ près de Gadir (à l'Est), avec une vue magnifique en journée. Vous pouvez également choisir La Vela, Bora Bora ou Kaya Kaya 🐟 au port de Scauri.\n🍝 Pour le dîner, nous recommandons aussi Altamarea ainsi que Rifugio Firiciakki, tous deux situés à Scauri.", "en": "For your first evening, we recommend having dinner at La Nicchia in Scauri, serving pizzas and traditional Pantellerian dishes.\nAfterwards, enjoy an ice cream at Gelato di Ulisse 🍦 or have a drink 🍸 at Kaya Kaya, Scauri's go-to spot for an aperitivo or an after-dinner cocktail.\nFor lunch, our favorite place is Principe e Pirata 🏴‍☠️, near Gadir (east side), with a beautiful daytime view. You can also choose La Vela, Bora Bora, or Kaya Kaya 🐟 at the port of Scauri.\n🍝 For dinner, we also recommend Altamarea and Rifugio Firiciakki, both located in Scauri."}, "bg": "none"}, {"id": "i06", "type": "heading", "content": {"fr": "🚕 Taxi", "en": "🚕 Taxi"}}, {"id": "i07", "type": "text", "content": {"fr": "Chiara", "en": "Chiara"}, "bg": "none"}, {"id": "i08", "type": "button", "label": {"fr": "📱 WhatsApp Chiara", "en": "📱 WhatsApp Chiara"}, "url": "https://wa.me/393208426113", "color": "blue", "align": "left"}, {"id": "i09", "type": "heading", "content": {"fr": "⛵️ Bateau traditionnel avec skipper", "en": "⛵️ Traditional boat with skipper"}}, {"id": "i10", "type": "text", "content": {"fr": "L'Oasi est un bateau traditionnel tunisien avec skipper au départ du port de Scauri pour découvrir les falaises spectaculaires du sud de l'île et les criques accessibles uniquement par la mer.\nFrancesco", "en": "The Oasi is a traditional Tunisian boat with skipper from the port of Scauri to discover the spectacular cliffs of the south of the island and the coves accessible only by sea.\nFrancesco"}, "bg": "none"}, {"id": "i11", "type": "button", "label": {"fr": "📱 WhatsApp Francesco", "en": "📱 WhatsApp Francesco"}, "url": "https://wa.me/393397808408", "color": "blue", "align": "left"}, {"id": "i12", "type": "heading", "content": {"fr": "🛳️ Excursions en bateau", "en": "🛳️ Boat tours"}}, {"id": "i13", "type": "text", "content": {"fr": "Départ du port de Pantelleria. Billets en ligne.", "en": "Departure from the port of Pantelleria. Online tickets."}, "bg": "none"}, {"id": "i14", "type": "button", "label": {"fr": "🌐 francofutura.it", "en": "🌐 francofutura.it"}, "url": "https://francofutura.it", "color": "terracotta", "align": "left"}, {"id": "i15", "type": "heading", "content": {"fr": "🌊 Accès à la mer", "en": "🌊 Access to the sea"}}, {"id": "i16", "type": "text", "content": {"fr": "Les plus beaux accès à la mer sont Balata dei Turchi et Nika Beach. Plages rocheuses uniquement, sans sable.\nSi le vent souffle, les bassins naturels de Laghetto delle Ondine offrent une baignade magnifique et protégée.", "en": "The most beautiful accesses to the sea are Balata dei Turchi and Nika Beach. Rocky beaches only, no sand.\nIf the wind blows, the natural pools of Laghetto delle Ondine offer a magnificent and protected swim."}, "bg": "none"}, {"id": "i17", "type": "heading", "content": {"fr": "♨️ Eaux thermales", "en": "♨️ Hot springs"}}, {"id": "i18", "type": "text", "content": {"fr": "Les sources d'eau chaude se trouvent à Gadir, Nika, Sataria, ainsi qu'au Lago di Venere, où vous pourrez également profiter des célèbres bains de boue noire.\nNe manquez pas le hammam naturel de Grotta di Benikulà.", "en": "Thermal waters can be found in Gadir, Nika, Sataria, as well as Lago di Venere, where you can also enjoy the famous black mud baths.\nDon't miss the natural hammam of Grotta di Benikulà."}, "bg": "none"}, {"id": "i19", "type": "heading", "content": {"fr": "⛰️ Randonnées", "en": "⛰️ Hiking"}}, {"id": "i20", "type": "text", "content": {"fr": "Pour une vue exceptionnelle sur toute l'île, partez tôt le matin jusqu'au Monte Gibele 🥾.\nSinon la balade de Favara Grande à la Grotta di Benikulà est merveilleuse. Monastero est aussi un site exceptionnel.", "en": "For an exceptional view of the whole island, go early in the morning to Monte Gibele 🥾.\nOtherwise the walk from Favara Grande to the Grotta di Benikulà is wonderful. Monastero is also an exceptional site."}, "bg": "none"}, {"id": "i21", "type": "button", "label": {"fr": "🥾 Parcours", "en": "🥾 Trails"}, "url": "https://www.parconazionalepantelleria.it/Eitinerari-sentieri.php", "color": "terracotta", "align": "left"}, {"id": "i22", "type": "heading", "content": {"fr": "⛽️ Station-service", "en": "⛽️ Gas station"}}, {"id": "i23", "type": "text", "content": {"fr": "Les stations-service se trouvent uniquement dans le centre-ville de Pantelleria.", "en": "You can only find the gas station in the city of Pantelleria."}, "bg": "none"}, {"id": "i24", "type": "button", "label": {"fr": "🗾 Voir sur la carte", "en": "🗾 See on the map"}, "url": "https://maps.app.goo.gl/DN5WZvTqNd8PvUnx8", "color": "terracotta", "align": "left"}]}]};
+
+const MAX_PAGES = 4;
+let currentPageId = 'p1';
+let currentLang = 'fr';
+
+// Retourne la page active
+function getCurrentPage() {
+  return data.welcome.pages.find(p => p.id === currentPageId) || data.welcome.pages[0];
+}
+
+// Migration : convertir l'ancienne structure {dammusi, pantelleria} vers {pages: [...]}
+function migrateWelcome(loaded) {
+  if (!loaded) return null;
+  if (Array.isArray(loaded.pages)) return { pages: loaded.pages };
+  // Ancienne structure
+  const pages = [];
+  if (loaded.dammusi) {
+    pages.push({
+      id: 'p1', name: 'Dammusi',
+      title: loaded.dammusi.title || { fr: '', en: '' },
+      subtitle: loaded.dammusi.subtitle || { fr: '', en: '' },
+      sections: Array.isArray(loaded.dammusi.sections) ? loaded.dammusi.sections : []
+    });
+  }
+  if (loaded.pantelleria) {
+    pages.push({
+      id: 'p2', name: 'Pantelleria',
+      title: loaded.pantelleria.title || { fr: '', en: '' },
+      subtitle: loaded.pantelleria.subtitle || { fr: '', en: '' },
+      sections: Array.isArray(loaded.pantelleria.sections) ? loaded.pantelleria.sections : []
+    });
+  }
+  return pages.length ? { pages } : null;
+}
+
+// ============ CHARGEMENT / SAUVEGARDE ============
+let dataLoaded = false;  // Protection : true seulement après un chargement réussi
+let prefilledFromDefault = false; // true si le contenu par défaut a été chargé
+
+async function loadData() {
+  setStatus('loading', 'Chargement…');
+  try {
+    const res = await fetch(`${JSONBIN_URL}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.record) {
+      if (Array.isArray(json.record.bookings)) data.bookings = json.record.bookings;
+      const migrated = migrateWelcome(json.record.welcome);
+      if (migrated && migrated.pages && migrated.pages.length > 0) {
+        // Si les pages de jsonbin sont vides (aucune section), pré-remplir avec le contenu par défaut
+        const totalSections = migrated.pages.reduce((n, p) => n + (Array.isArray(p.sections) ? p.sections.length : 0), 0);
+        if (totalSections === 0) {
+          data.welcome = JSON.parse(JSON.stringify(DEFAULT_WELCOME));
+          prefilledFromDefault = true;
+        } else {
+          data.welcome = migrated;
+        }
+      } else {
+        data.welcome = JSON.parse(JSON.stringify(DEFAULT_WELCOME));
+        prefilledFromDefault = true;
+      }
+      // Assurer que chaque page a bien un id
+      data.welcome.pages.forEach((p, i) => {
+        if (!p.id) p.id = 'p' + (i + 1);
+        if (!p.title || typeof p.title === 'string') p.title = { fr: p.title || '', en: p.title || '' };
+        if (!p.subtitle || typeof p.subtitle === 'string') p.subtitle = { fr: '', en: '' };
+        if (!Array.isArray(p.sections)) p.sections = [];
+      });
+      currentPageId = data.welcome.pages[0].id;
+    }
+    dataLoaded = true;
+    if (prefilledFromDefault) {
+      setStatus('warn', 'Contenu pré-rempli chargé — tapez 💾 Sauvegarder pour le publier');
+    } else {
+      setStatus('ok', 'Chargé');
+    }
+    updateInfoBanner();
+  } catch (e) {
+    console.error(e);
+    dataLoaded = false;
+    setStatus('err', 'Erreur chargement : ' + (e.message || e) + ' — sauvegarde désactivée');
+    const errBanner = document.getElementById('info-banner');
+    if (errBanner) {
+      errBanner.style.background = '#fce8e8';
+      errBanner.style.color = '#d64545';
+      errBanner.textContent = 'Détail erreur : ' + (e.message || String(e));
+    }
+  }
+  renderAll();
+}
+
+async function save() {
+  // Protection 1 : refuser de sauvegarder si les données n'ont pas été chargées
+  if (!dataLoaded) {
+    if (!confirm('⚠️ Les données n\'ont pas pu être chargées depuis le serveur. Sauvegarder maintenant risque d\'ÉCRASER tes pages existantes avec des valeurs vides.\n\nEs-tu VRAIMENT sûr de vouloir sauvegarder ?')) {
+      setStatus('err', 'Sauvegarde annulée');
+      return;
+    }
+  }
+  setStatus('loading', 'Sauvegarde…');
+  // Récupérer les valeurs actuelles des champs
+  syncCurrentPageTitles();
+  try {
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY,
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 100));
+    }
+    setStatus('ok', '✓ Sauvegardé');
+    setTimeout(() => setStatus('', 'Prêt'), 3000);
+  } catch (e) {
+    console.error(e);
+    if (String(e).includes('413') || String(e).includes('size')) {
+      setStatus('err', 'Trop lourd. Supprimez des images.');
+    } else {
+      setStatus('err', 'Erreur sauvegarde');
+    }
+  }
+  updateInfoBanner();
+}
+
+function updateInfoBanner() {
+  const banner = document.getElementById('info-banner');
+  const size = new Blob([JSON.stringify(data)]).size;
+  const kb = (size / 1024).toFixed(1);
+  const percent = Math.round(size / 100000 * 100);
+  let color = 'var(--accent-soft)';
+  let ink = 'var(--accent)';
+  let msg = `Taille des textes : ${kb} Ko (${percent}% du quota) — Images hébergées sur ImgBB`;
+  if (percent > 80) {
+    color = '#fce8e8'; ink = 'var(--danger)';
+    msg += ' — Attention : trop de texte.';
+  } else if (percent > 50) {
+    color = '#fdf5e6'; ink = '#d68a20';
+  }
+  banner.style.background = color;
+  banner.style.color = ink;
+  banner.textContent = msg;
+}
+
+function setStatus(cls, txt) {
+  const el = document.getElementById('status');
+  el.className = 'status ' + cls;
+  el.textContent = txt;
+}
+
+// ============ TRADUCTION AUTO (MyMemory) ============
+async function translateText(text, from, to) {
+  if (!text || !text.trim()) return '';
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Erreur traduction ' + res.status);
+  const json = await res.json();
+  if (json.responseStatus && json.responseStatus !== 200 && json.responseStatus !== '200') {
+    throw new Error(json.responseDetails || 'Erreur traduction');
+  }
+  return json.responseData.translatedText || '';
+}
+
+async function translateField(sectionId, fieldName) {
+  const from = currentLang === 'fr' ? 'en' : 'fr';
+  const to = currentLang;
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === sectionId);
+  if (!s) return;
+  const source = s[fieldName][from];
+  if (!source || !source.trim()) {
+    setStatus('warn', 'Rien à traduire dans l\'autre langue');
+    return;
+  }
+  const existing = s[fieldName][to];
+  if (existing && existing.trim() && !confirm('Écraser le texte existant par la traduction ?')) return;
+  setStatus('loading', 'Traduction…');
+  try {
+    const translated = await translateText(source, from, to);
+    s[fieldName][to] = translated;
+    renderAll();
+    setStatus('ok', '✓ Traduit');
+    setTimeout(() => setStatus('', 'Prêt'), 2000);
+  } catch (e) {
+    console.error(e);
+    setStatus('err', 'Erreur traduction');
+  }
+}
+
+async function translateTitle(field) {
+  // field = 'title' ou 'subtitle'
+  syncCurrentPageTitles();
+  const from = currentLang === 'fr' ? 'en' : 'fr';
+  const to = currentLang;
+  const page = getCurrentPage();
+  const source = page[field][from];
+  if (!source || !source.trim()) {
+    setStatus('warn', 'Rien à traduire dans l\'autre langue');
+    return;
+  }
+  const existing = page[field][to];
+  if (existing && existing.trim() && !confirm('Écraser le texte existant par la traduction ?')) return;
+  setStatus('loading', 'Traduction…');
+  try {
+    const translated = await translateText(source, from, to);
+    page[field][to] = translated;
+    renderAll();
+    setStatus('ok', '✓ Traduit');
+    setTimeout(() => setStatus('', 'Prêt'), 2000);
+  } catch (e) {
+    console.error(e);
+    setStatus('err', 'Erreur traduction');
+  }
+}
+
+async function translateAll() {
+  const from = currentLang === 'fr' ? 'en' : 'fr';
+  const to = currentLang;
+  const page = getCurrentPage();
+  syncCurrentPageTitles();
+
+  // Récupérer tous les champs à traduire
+  const toTranslate = [];
+  const titleSrc = page.title[from];
+  if (titleSrc && titleSrc.trim() && !page.title[to].trim()) {
+    toTranslate.push({ apply: (t) => { page.title[to] = t; }, source: titleSrc });
+  }
+  const subSrc = page.subtitle[from];
+  if (subSrc && subSrc.trim() && !page.subtitle[to].trim()) {
+    toTranslate.push({ apply: (t) => { page.subtitle[to] = t; }, source: subSrc });
+  }
+  page.sections.forEach(s => {
+    ['content', 'label', 'caption'].forEach(field => {
+      if (s[field] && typeof s[field] === 'object') {
+        const src = s[field][from];
+        if (src && src.trim() && !(s[field][to] && s[field][to].trim())) {
+          toTranslate.push({
+            apply: (t) => { s[field][to] = t; },
+            source: src
+          });
+        }
+      }
+    });
+  });
+
+  if (toTranslate.length === 0) {
+    setStatus('warn', 'Rien à traduire (tout est déjà rempli)');
+    return;
+  }
+  if (!confirm(`Traduire ${toTranslate.length} champ(s) vide(s) depuis ${from.toUpperCase()} ?`)) return;
+
+  setStatus('loading', `Traduction en cours (0/${toTranslate.length})…`);
+  let done = 0;
+  for (const item of toTranslate) {
+    try {
+      const t = await translateText(item.source, from, to);
+      item.apply(t);
+      done++;
+      setStatus('loading', `Traduction en cours (${done}/${toTranslate.length})…`);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  renderAll();
+  setStatus('ok', `✓ ${done} traductions effectuées`);
+  setTimeout(() => setStatus('', 'Prêt'), 3000);
+}
+
+// ============ NAVIGATION PAGE/LANGUE ============
+document.getElementById('page-select').addEventListener('change', (e) => {
+  syncCurrentPageTitles();
+  currentPageId = e.target.value;
+  renderAll();
+});
+document.getElementById('lang-select').addEventListener('change', (e) => {
+  syncCurrentPageTitles();
+  currentLang = e.target.value;
+  renderAll();
+});
+document.getElementById('page-name').addEventListener('input', (e) => {
+  updatePageName(e.target.value);
+});
+
+function syncCurrentPageTitles() {
+  const page = getCurrentPage();
+  if (!page) return;
+  const t = document.getElementById('page-title').value;
+  const s = document.getElementById('page-subtitle').value;
+  if (!page.title || typeof page.title === 'string') page.title = { fr: '', en: '' };
+  if (!page.subtitle || typeof page.subtitle === 'string') page.subtitle = { fr: '', en: '' };
+  page.title[currentLang] = t;
+  page.subtitle[currentLang] = s;
+}
+
+// ============ GESTION DES PAGES ============
+function pageUid() { return 'p' + Date.now() + Math.floor(Math.random() * 1000); }
+
+function addPage() {
+  if (data.welcome.pages.length >= MAX_PAGES) {
+    alert(`Maximum ${MAX_PAGES} pages.`);
+    return;
+  }
+  syncCurrentPageTitles();
+  const newPage = {
+    id: pageUid(),
+    name: 'Nouvelle page',
+    title: { fr: '', en: '' },
+    subtitle: { fr: '', en: '' },
+    sections: []
+  };
+  data.welcome.pages.push(newPage);
+  currentPageId = newPage.id;
+  refreshPageSelector();
+  renderAll();
+}
+
+function movePage(dir) {
+  const pages = data.welcome.pages;
+  const i = pages.findIndex(p => p.id === currentPageId);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= pages.length) return;
+  [pages[i], pages[j]] = [pages[j], pages[i]];
+  refreshPageSelector();
+}
+
+function deletePage() {
+  if (data.welcome.pages.length <= 1) {
+    alert('Il doit rester au moins une page.');
+    return;
+  }
+  const page = getCurrentPage();
+  if (!confirm(`Supprimer la page "${page.name}" ? Cette action est irréversible.`)) return;
+  data.welcome.pages = data.welcome.pages.filter(p => p.id !== currentPageId);
+  currentPageId = data.welcome.pages[0].id;
+  refreshPageSelector();
+  renderAll();
+}
+
+function updatePageName(newName) {
+  const page = getCurrentPage();
+  if (page) {
+    page.name = newName;
+    refreshPageSelector();
+  }
+}
+
+function refreshPageSelector() {
+  const sel = document.getElementById('page-select');
+  sel.innerHTML = '';
+  data.welcome.pages.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name || 'Sans nom';
+    if (p.id === currentPageId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  const nameField = document.getElementById('page-name');
+  if (nameField) {
+    const page = getCurrentPage();
+    nameField.value = page ? page.name : '';
+  }
+}
+
+// ============ SECTIONS ============
+function uid() { return 's' + Date.now() + Math.floor(Math.random() * 1000); }
+
+function addSection(type) {
+  const page = getCurrentPage();
+  const section = { id: uid(), type };
+  if (type === 'heading') {
+    section.content = { fr: '', en: '' };
+  } else if (type === 'text') {
+    section.content = { fr: '', en: '' };
+    section.bg = 'none';
+  } else if (type === 'image') {
+    section.src = '';
+    section.caption = { fr: '', en: '' };
+  } else if (type === 'button') {
+    section.label = { fr: 'Ouvrir', en: 'Open' };
+    section.url = '';
+    section.color = 'terracotta';
+    section.align = 'left';
+  } else if (type === 'important') {
+    section.content = { fr: '', en: '' };
+    section.bg = 'sand';
+    section.bold = true;
+  }
+  page.sections.push(section);
+  renderSections();
+  updateInfoBanner();
+}
+
+function moveSection(id, dir) {
+  const sections = getCurrentPage().sections;
+  const i = sections.findIndex(s => s.id === id);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= sections.length) return;
+  [sections[i], sections[j]] = [sections[j], sections[i]];
+  renderSections();
+}
+
+function deleteSection(id) {
+  if (!confirm('Supprimer cette section ?')) return;
+  const page = getCurrentPage();
+  page.sections = page.sections.filter(s => s.id !== id);
+  renderSections();
+  updateInfoBanner();
+}
+
+function updateSectionField(id, field, value) {
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === id);
+  if (!s) return;
+  if (field === 'content' || field === 'label' || field === 'caption') {
+    if (typeof s[field] !== 'object') s[field] = { fr: '', en: '' };
+    s[field][currentLang] = value;
+  } else {
+    s[field] = value;
+  }
+}
+
+function setSectionBg(id, bgId) {
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === id);
+  if (!s) return;
+  s.bg = bgId;
+  renderSections();
+}
+
+function setSectionBold(id, bold) {
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === id);
+  if (!s) return;
+  s.bold = bold;
+  renderSections();
+}
+
+function setButtonColor(id, colorId) {
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === id);
+  if (!s) return;
+  s.color = colorId;
+  renderSections();
+}
+
+function setButtonAlign(id, alignId) {
+  const page = getCurrentPage();
+  const s = page.sections.find(s => s.id === id);
+  if (!s) return;
+  s.align = alignId;
+  renderSections();
+}
+
+// ============ UPLOAD IMAGE (via ImgBB) ============
+async function handleImageUpload(id, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  setStatus('loading', 'Préparation image…');
+  try {
+    // Compression légère : max 2000px, qualité 85% (ImgBB accepte jusqu'à 32 Mo)
+    const dataUrl = await compressImage(file, 2000, 0.85);
+    setStatus('loading', 'Upload sur ImgBB…');
+    // ImgBB attend le base64 sans le préfixe "data:image/jpeg;base64,"
+    const base64 = dataUrl.split(',')[1];
+    const formData = new FormData();
+    formData.append('image', base64);
+    const res = await fetch(IMGBB_URL, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('ImgBB HTTP ' + res.status);
+    const json = await res.json();
+    if (!json.success || !json.data || !json.data.url) {
+      throw new Error('ImgBB response invalide');
+    }
+    const url = json.data.url;
+    const s = getCurrentPage().sections.find(s => s.id === id);
+    if (s) {
+      s.src = url;
+      renderSections();
+      updateInfoBanner();
+      setStatus('ok', 'Image ajoutée');
+      setTimeout(() => setStatus('', 'Prêt'), 2000);
+    }
+  } catch (e) {
+    console.error(e);
+    setStatus('err', 'Erreur upload image');
+  }
+}
+
+function compressImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w >= h) { h = h * maxDim / w; w = maxDim; }
+        else { w = w * maxDim / h; h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w); canvas.height = Math.round(h);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// ============ RENDU ============
+function renderAll() {
+  refreshPageSelector();
+  const page = getCurrentPage();
+  if (!page) return;
+  const t = typeof page.title === 'string' ? page.title : (page.title[currentLang] || '');
+  const s = typeof page.subtitle === 'string' ? page.subtitle : (page.subtitle[currentLang] || '');
+  document.getElementById('page-title').value = t;
+  document.getElementById('page-subtitle').value = s;
+  renderSections();
+}
+
+function renderSections() {
+  const container = document.getElementById('sections-container');
+  const sections = getCurrentPage().sections;
+  container.innerHTML = '';
+  sections.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'section';
+
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    const typeLabel = {
+      heading: '📌 Titre de section',
+      text: '📝 Paragraphe',
+      image: '🖼️ Image',
+      button: '🔘 Bouton / lien',
+      important: '❗ Bloc important'
+    }[s.type];
+    head.innerHTML = `
+      <span class="section-type">${typeLabel}</span>
+      <div class="section-actions">
+        <button title="Monter" ${i === 0 ? 'disabled' : ''} onclick="moveSection('${s.id}', -1)">↑</button>
+        <button title="Descendre" ${i === sections.length - 1 ? 'disabled' : ''} onclick="moveSection('${s.id}', 1)">↓</button>
+        <button title="Supprimer" class="del" onclick="deleteSection('${s.id}')">🗑</button>
+      </div>
+    `;
+    div.appendChild(head);
+
+    // Contenu selon type
+    if (s.type === 'heading') {
+      const val = getLangVal(s.content);
+      div.innerHTML += `
+        <div class="field">
+          <label>Titre (astuce : mettez un emoji au début, ex: "🏠 Arrivée") <button type="button" onclick="translateField('${s.id}', 'content')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+          <input type="text" value="${escapeHtml(val)}" oninput="updateSectionField('${s.id}', 'content', this.value)">
+        </div>
+      `;
+    } else if (s.type === 'text') {
+      const val = getLangVal(s.content);
+      let colorPicker = '<div class="color-picker">';
+      BG_COLORS.forEach(c => {
+        const active = (s.bg || 'none') === c.id ? 'active' : '';
+        colorPicker += `<div class="color-swatch ${active}" data-name="${c.name}" style="background:${c.color === 'transparent' ? '#f9f9f9 repeating-linear-gradient(45deg, transparent, transparent 5px, #eee 5px, #eee 10px)' : c.color}" onclick="setSectionBg('${s.id}', '${c.id}')"></div>`;
+      });
+      colorPicker += '</div>';
+      div.innerHTML += `
+        <div class="field">
+          <label>Texte (astuce : mettez un emoji au début de chaque paragraphe) <button type="button" onclick="translateField('${s.id}', 'content')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+          <textarea rows="4" oninput="updateSectionField('${s.id}', 'content', this.value)">${escapeHtml(val)}</textarea>
+        </div>
+        <div class="field">
+          <label>Couleur de fond</label>
+          ${colorPicker}
+        </div>
+      `;
+    } else if (s.type === 'image') {
+      const cap = getLangVal(s.caption);
+      const preview = s.src ? `<img class="image-preview" src="${s.src}">` : '';
+      div.innerHTML += `
+        <div class="field">
+          <label>Photo</label>
+          <input type="file" id="file-${s.id}" accept="image/*" style="display:none" onchange="handleImageUpload('${s.id}', this)">
+          <label for="file-${s.id}" class="image-btn">📷 ${s.src ? 'Changer la photo' : 'Choisir une photo'}</label>
+          ${preview}
+        </div>
+        <div class="field">
+          <label>Légende (optionnel) <button type="button" onclick="translateField('${s.id}', 'caption')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+          <input type="text" value="${escapeHtml(cap)}" oninput="updateSectionField('${s.id}', 'caption', this.value)" placeholder="Optionnel">
+        </div>
+      `;
+    } else if (s.type === 'button') {
+      const label = getLangVal(s.label);
+      const color = s.color || 'terracotta';
+      const align = s.align || 'left';
+      const colorOpts = [
+        { id: 'terracotta', name: 'Terracotta', bg: '#c46a3f', txt: 'white' },
+        { id: 'blue',       name: 'Bleu iOS',   bg: '#0071e3', txt: 'white' },
+        { id: 'gray',       name: 'Gris clair', bg: '#f0f0f0', txt: '#1f1f1f' },
+      ];
+      let colorPicker = '<div class="color-picker">';
+      colorOpts.forEach(c => {
+        const active = color === c.id ? 'active' : '';
+        colorPicker += `<div class="color-swatch ${active}" data-name="${c.name}" style="background:${c.bg};border:${c.id === 'gray' ? '2px solid #d0d0d0' : '2px solid var(--line)'}" onclick="setButtonColor('${s.id}', '${c.id}')"></div>`;
+      });
+      colorPicker += '</div>';
+      const alignOpts = [
+        { id: 'left',   label: '⬅ Gauche' },
+        { id: 'center', label: '⬌ Centré' },
+        { id: 'right',  label: 'Droite ➡' },
+      ];
+      let alignPicker = '<div style="display:flex;gap:6px;margin-top:6px;">';
+      alignOpts.forEach(a => {
+        const active = align === a.id;
+        alignPicker += `<button type="button" onclick="setButtonAlign('${s.id}', '${a.id}')" style="padding:8px 12px;border-radius:8px;border:1px solid ${active ? 'var(--accent)' : 'var(--line)'};background:${active ? 'var(--accent-soft)' : 'white'};color:${active ? 'var(--accent)' : 'var(--ink)'};font-family:inherit;font-size:13px;cursor:pointer;font-weight:${active ? '600' : '400'};">${a.label}</button>`;
+      });
+      alignPicker += '</div>';
+      div.innerHTML += `
+        <div class="field">
+          <label>Texte du bouton <button type="button" onclick="translateField('${s.id}', 'label')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+          <input type="text" value="${escapeHtml(label)}" oninput="updateSectionField('${s.id}', 'label', this.value)" placeholder="Ex: Ouvrir dans Maps">
+        </div>
+        <div class="field">
+          <label>URL (http://... ou tel:+33... ou https://maps...)</label>
+          <input type="url" value="${escapeHtml(s.url || '')}" oninput="updateSectionField('${s.id}', 'url', this.value)" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label>Couleur du bouton</label>
+          ${colorPicker}
+        </div>
+        <div class="field">
+          <label>Alignement</label>
+          ${alignPicker}
+        </div>
+      `;
+    } else if (s.type === 'important') {
+      const val = getLangVal(s.content);
+      const isBold = s.bold !== false; // par défaut true
+      let importantColorPicker = '<div class="color-picker">';
+      BG_COLORS.forEach(c => {
+        const active = (s.bg || 'sand') === c.id ? 'active' : '';
+        importantColorPicker += `<div class="color-swatch ${active}" data-name="${c.name}" style="background:${c.color === 'transparent' ? '#f9f9f9 repeating-linear-gradient(45deg, transparent, transparent 5px, #eee 5px, #eee 10px)' : c.color}" onclick="setSectionBg('${s.id}', '${c.id}')"></div>`;
+      });
+      importantColorPicker += '</div>';
+      const boldPicker = `
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button type="button" onclick="setSectionBold('${s.id}', true)" style="padding:8px 14px;border-radius:8px;border:1px solid ${isBold ? 'var(--accent)' : 'var(--line)'};background:${isBold ? 'var(--accent-soft)' : 'white'};color:${isBold ? 'var(--accent)' : 'var(--ink)'};font-family:inherit;font-size:13px;cursor:pointer;font-weight:${isBold ? '700' : '400'};"><b>B</b> Gras</button>
+          <button type="button" onclick="setSectionBold('${s.id}', false)" style="padding:8px 14px;border-radius:8px;border:1px solid ${!isBold ? 'var(--accent)' : 'var(--line)'};background:${!isBold ? 'var(--accent-soft)' : 'white'};color:${!isBold ? 'var(--accent)' : 'var(--ink)'};font-family:inherit;font-size:13px;cursor:pointer;font-weight:${!isBold ? '600' : '400'};">Normal</button>
+        </div>
+      `;
+      div.innerHTML += `
+        <div class="field">
+          <label>Contenu <button type="button" onclick="translateField('${s.id}', 'content')" style="font-size:11px;padding:3px 8px;margin-left:6px;border:1px solid var(--line);background:white;border-radius:6px;cursor:pointer;font-family:inherit;">🌐 Traduire</button></label>
+          <textarea rows="4" oninput="updateSectionField('${s.id}', 'content', this.value)">${escapeHtml(val)}</textarea>
+        </div>
+        <div class="field">
+          <label>Couleur de fond</label>
+          ${importantColorPicker}
+        </div>
+        <div class="field">
+          <label>Style du texte</label>
+          ${boldPicker}
+        </div>
+      `;
+    }
+
+    container.appendChild(div);
+  });
+}
+
+function getLangVal(field) {
+  if (typeof field === 'string') return field;
+  if (field && typeof field === 'object') return field[currentLang] || '';
+  return '';
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ============ PREVIEW ============
+async function preview() {
+  await save();
+  window.open('index.html', '_blank');
+}
+
+// ============ EXPORT SAUVEGARDE LOCALE ============
+function exportBackup() {
+  syncCurrentPageTitles();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `welcome-dammusi-backup-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setStatus('ok', '✓ Sauvegarde locale téléchargée');
+  setTimeout(() => setStatus('', 'Prêt'), 3000);
+}
+
+// ============ IMPORT DEPUIS FICHIER JSON ============
+function importBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      // Format 1 : fichier complet {bookings, welcome}
+      // Format 2 : juste {welcome: {pages: [...]}}
+      // Format 3 : juste {pages: [...]}
+      let newWelcome = null;
+      if (imported.welcome && Array.isArray(imported.welcome.pages)) {
+        newWelcome = imported.welcome;
+      } else if (Array.isArray(imported.pages)) {
+        newWelcome = { pages: imported.pages };
+      }
+      if (!newWelcome) {
+        alert('Format JSON non reconnu. Le fichier doit contenir une section "welcome" avec des pages.');
+        input.value = '';
+        return;
+      }
+      if (!confirm(`Importer ${newWelcome.pages.length} page(s) ? Cela remplacera les pages actuelles (les bookings du planning sont préservés).`)) {
+        input.value = '';
+        return;
+      }
+      data.welcome = newWelcome;
+      // Assurer que chaque page a bien un id
+      data.welcome.pages.forEach((p, i) => {
+        if (!p.id) p.id = 'p' + (i + 1);
+      });
+      currentPageId = data.welcome.pages[0].id;
+      renderAll();
+      setStatus('ok', `✓ ${newWelcome.pages.length} page(s) importée(s). Vérifiez puis Sauvegardez.`);
+    } catch (e) {
+      console.error(e);
+      alert('Erreur : fichier JSON invalide.');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ============ INIT ============
+loadData();
+</script>
+</body>
+</html>
